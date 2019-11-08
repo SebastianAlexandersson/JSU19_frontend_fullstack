@@ -1,14 +1,19 @@
 <template>
-  <div class="container">
-    <h1>App</h1>
+  <div>
+    <NavBar />
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
+import NavBar from './components/NavBar.vue'
 
 export default {
   components: {
-
+    NavBar
+  },
+  created() {
+    this.$store.dispatch('getCities')
   }
 }
 </script>

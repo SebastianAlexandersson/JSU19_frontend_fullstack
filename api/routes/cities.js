@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const db_con = require('../../db/db')
 const ash = require('../utils')
+const uuid = require('uuid/v4')
 
 router.get('/', ash(async (req, res) => {
   const { name, population } = req.query
@@ -36,8 +37,8 @@ router.post('/', ash(async (req, res) => {
     throw Error('Please provide both name and population')
   }
   const db = await db_con
-  const query = 'INSERT INTO cities VALUES (?, ?)'
-  await db.run(query, [name, population]).then(() => res.send('Successfully created ' + name))
+  const query = 'INSERT INTO cities VALUES (?, ?, ?)'
+  await db.run(query, [name, population, uuid()]).then(() => res.send('Successfully created ' + name))
 }))
 
 router.put('/', ash(async (req, res) => {
@@ -57,14 +58,14 @@ router.put('/', ash(async (req, res) => {
 }))
 
 router.delete('/', ash(async (req, res) => {
-  const name = req.query.name
-  if(!name) {
+  const id = req.query.id
+  if(!id) {
     res.status(400)
     res.send()
   }
   const db = await db_con
-  const query = 'DELETE FROM cities WHERE name=?'
-  const deleted = await db.run(query, name)
+  const query = 'DELETE FROM cities WHERE id=?'
+  const deleted = await db.run(query, id)
     .then(() => {
       res.status(200)
       res.send()

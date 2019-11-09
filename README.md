@@ -1,5 +1,5 @@
-Start dev server: "npm run dev"
+1. npm install
 
-Build frontend: "npm run build"
+2. npm run build
 
-Start express api and server production build: "npm run start"s
+3. npm run start

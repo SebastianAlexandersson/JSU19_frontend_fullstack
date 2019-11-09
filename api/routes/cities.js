@@ -42,18 +42,17 @@ router.post('/', ash(async (req, res) => {
 }))
 
 router.put('/', ash(async (req, res) => {
-  const name = req.query.name
+  const id = req.query.id
   const { name: updateName, population: updatePop } = req.body
-  if(!name) {
-    res.status(400)
-    res.send()
+  if(!id && id.length < 1 ) {
+    throw Error('Missing id')
   } else if(!updateName || !updatePop) {
     throw Error('Please provide both name and population')
   } else {
     const db = await db_con
-    const query = 'UPDATE cities SET name=?, population=? WHERE name=?'
-    const update = await db.run(query, [updateName, updatePop, name])
-      .then(() => res.send('Successfully updated ' + name))
+    const query = 'UPDATE cities SET name=?, population=? WHERE id=?'
+    const update = await db.run(query, [updateName, updatePop, id])
+      .then(() => res.send('Successfully updated city'))
   }
 }))
 

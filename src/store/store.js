@@ -9,7 +9,9 @@ export default new VueX.Store({
     logo,
     cities: null,
     error: false,
-    success: false
+    success: false,
+    message: "",
+    timeoutId: null
   },
   getters: {
 
@@ -30,10 +32,10 @@ export default new VueX.Store({
           throw Error
         } else {
           context.dispatch('getCities')
-          context.dispatch('setSuccess')
+          context.dispatch('setSuccess', 'Deleted city.')
         }
       } catch(error) {
-        context.dispatch('setError')
+        context.dispatch('setError', 'Couldn\'t delete city.')
       }
     },
     addCity: async (context, payload) => {
@@ -50,31 +52,61 @@ export default new VueX.Store({
           throw Error
         } else {
           context.dispatch('getCities')
-          context.dispatch('setSuccess')
+          context.dispatch('setSuccess', 'Added city.')
         }
       } catch(error) {
-        context.dispatch('setError')
+        context.dispatch('setError', 'Couldn\'t add city.')
       }
     },
-    setError: (context) => {
+    updateCity: async (context, payload) => {
+      const { name, population, id } = payload
+      try {
+        if(!id) {
+          throw Error('Missing id.')
+        } else if(!name || !population) {
+            throw Error('Mising name or population.')
+        }
+        const req = fetch('http://localhost:5000/api/cities?id=' + id, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({name, population})
+        })
+        const res = await req
+        if(res.status !== 200) {
+          throw Error
+        } else {
+          context.dispatch('getCities')
+          context.dispatch('setSuccess', 'Updated city.')
+        }
+      } catch(error) {
+          context.dispatch('setError', 'Couldn\'t update city')
+      }
+    },
+    setError: (context, payload) => {
       if(context.state.error) {
-        return
+        clearTimeout(context.state.timeoutId)
       }
       context.commit('removeSuccess')
+      context.commit('setMessage', payload)
       context.commit('setError')
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         context.commit('removeError')
       }, 3000);
+      context.commit('setTimeoutId', timeoutId)
     },
-    setSuccess: (context) => {
+    setSuccess: (context, payload) => {
       if(context.state.success) {
-        return
+        clearTimeout(context.state.timeoutId)
       }
       context.commit('removeError')
+      context.commit('setMessage', payload)
       context.commit('setSuccess')
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         context.commit('removeSuccess')
       }, 3000);
+      context.commit('setTimeoutId', timeoutId)
     }
   },
   mutations: {
@@ -82,6 +114,8 @@ export default new VueX.Store({
     setError: state => state.error = true,
     removeError: state => state.error = false,
     setSuccess: state => state.success = true,
-    removeSuccess: state => state.success = false
+    removeSuccess: state => state.success = false,
+    setMessage: (state, payload) => state.message = payload,
+    setTimeoutId: (state, payload) => state.timeoutId = payload
   }
 })
